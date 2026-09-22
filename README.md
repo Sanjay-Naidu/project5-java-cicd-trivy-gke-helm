@@ -214,6 +214,16 @@ The order matters, and the script handles it. The load balancer and its NEGs are
 
 ---
 
+## What broke on the way (and what it taught me)
+
+**The Trivy gate blocked the very first image.** The build and all tests were green, but the image scan failed on three **CRITICAL** CVEs in `tomcat-embed-core 11.0.24` (CVE-2026-65182, CVE-2026-65905, CVE-2026-68525: security-constraint and authentication bypasses, all fixed in 11.0.25). The OS layer (distroless Debian 13) and every other jar were clean.
+
+Tomcat wasn't something I chose. It came in transitively through Spring Boot 4.1.1's managed versions, which is exactly the kind of dependency nobody reviews by hand. The fix was one line in `pom.xml`: `<tomcat.version>11.0.26</tomcat.version>`. Spring Boot exposes managed versions as properties precisely so you can patch a CVE without waiting for a framework release. The override is commented with the CVE IDs and a removal condition, so it doesn't become permanent drift.
+
+What it proved: the gate sits *before* the push, so the vulnerable image never reached Artifact Registry, let alone the cluster.
+
+---
+
 ## Production-hardening roadmap (what I'd add with a real budget)
 
 1. **Cloud SQL (PostgreSQL) + Spring Data JPA**, connected through the Cloud SQL Auth Proxy with Workload Identity: real persistence for orders and stock.

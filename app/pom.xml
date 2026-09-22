@@ -32,6 +32,12 @@ WHY Java 21 (LTS)   : long-term support, virtual threads, supported by every
     <properties>
         <java.version>21</java.version>
         <jacoco.version>0.8.15</jacoco.version>
+        <!-- SECURITY OVERRIDE: Boot 4.1.1 manages Tomcat 11.0.24, which the
+             Trivy gate blocked on first run (CVE-2026-65182, CVE-2026-65905,
+             CVE-2026-68525 - all CRITICAL, fixed in 11.0.25). Boot exposes the
+             version as a property exactly for this. Remove the override once
+             a Boot patch release manages >= 11.0.25 (Dependabot will PR it). -->
+        <tomcat.version>11.0.26</tomcat.version>
         <!-- SonarCloud settings are passed by the pipeline (-Dsonar.*), this
              only tells the scanner where the coverage report lives. -->
         <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
