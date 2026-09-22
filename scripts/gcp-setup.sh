@@ -161,6 +161,7 @@ else
     --cluster-secondary-range-name pods \
     --services-secondary-range-name services \
     --enable-private-nodes \
+    --enable-dns-access \
     --enable-dataplane-v2 \
     --workload-pool "${PROJECT_ID}.svc.id.goog" \
     --service-account "${NODE_SA}" \
@@ -178,6 +179,22 @@ else
     --logging SYSTEM \
     --monitoring SYSTEM
 fi
+
+# How GitHub Actions reaches the control plane.
+# New GKE clusters only accept traffic to the IP endpoint from
+# "control plane authorized networks". GitHub-hosted runners have no fixed
+# egress IP, so allow-listing them is impossible and 0.0.0.0/0 would defeat
+# the point. The DNS-based endpoint (CLUSTER.LOCATION.PROJECT.gke.goog) is
+# reachable from anywhere but authorised purely by IAM, so only the deployer
+# service account can use it. The workflows pass use_dns_based_endpoint: true.
+DNS_ACCESS="$(gcloud container clusters describe "${CLUSTER}" --zone "${ZONE}" \
+  --format='value(controlPlaneEndpointsConfig.dnsEndpointConfig.allowExternalTraffic)' 2>/dev/null)"
+if [[ "${DNS_ACCESS}" == "True" ]]; then
+  skip "DNS-based control plane endpoint already enabled"
+else
+  gcloud container clusters update "${CLUSTER}" --zone "${ZONE}" --enable-dns-access --quiet
+fi
+info "control plane DNS endpoint: $(gcloud container clusters describe "${CLUSTER}" --zone "${ZONE}" --format='value(controlPlaneEndpointsConfig.dnsEndpointConfig.endpoint)')"
 
 # -----------------------------------------------------------------------------
 step "6/8 Global static IP for the ingress load balancer"

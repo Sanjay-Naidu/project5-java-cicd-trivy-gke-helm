@@ -97,6 +97,7 @@ flowchart LR
 | **Private nodes + Cloud NAT** | Nodes have no public IPs, so nothing can reach them directly. NAT provides outbound traffic only. It costs about the same as giving each node a public IP. |
 | **Custom VPC with pod/service secondary ranges** | VPC-native networking, which container-native load balancing needs. An explicit IP plan, and teardown deletes exactly what was created. |
 | **Dataplane V2** | eBPF networking with NetworkPolicy enforcement built in, at no extra cost. |
+| **DNS-based control plane endpoint** | New GKE clusters only accept IP-endpoint traffic from authorized networks, and GitHub-hosted runners have no fixed egress IP. The DNS endpoint is reachable anywhere but authorised by IAM alone, so CI works without opening the API server to `0.0.0.0/0`. |
 | **Dedicated node service account** | The default Compute SA has Editor. My node SA only gets `container.defaultNodeServiceAccount` + `artifactregistry.reader` on one repo. |
 | **Workload Identity pool enabled** | Free at create time. Pods can later call GCP APIs as a service account without keys. |
 | **System-only logging/monitoring** | Stays inside the free Cloud Logging allotment. Application logs via `kubectl logs` + `/actuator/prometheus` are enough for a demo. |
@@ -221,6 +222,10 @@ The order matters, and the script handles it. The load balancer and its NEGs are
 Tomcat wasn't something I chose. It came in transitively through Spring Boot 4.1.1's managed versions, which is exactly the kind of dependency nobody reviews by hand. The fix was one line in `pom.xml`: `<tomcat.version>11.0.26</tomcat.version>`. Spring Boot exposes managed versions as properties precisely so you can patch a CVE without waiting for a framework release. The override is commented with the CVE IDs and a removal condition, so it doesn't become permanent drift.
 
 What it proved: the gate sits *before* the push, so the vulnerable image never reached Artifact Registry, let alone the cluster.
+
+**The first deploy couldn't reach the cluster.** Auth worked, the image pushed, then Helm failed with `kubernetes cluster unreachable: dial tcp 136.x.x.x:443: i/o timeout`. Not credentials, not firewall on my side: GKE now enables **control plane authorized networks** by default, and the API server's IP endpoint simply drops traffic from everywhere else. GitHub-hosted runners have no fixed egress IP, so an allow-list can't work, and `0.0.0.0/0` would throw the control away.
+
+The right fix was GKE's **DNS-based endpoint** (`--enable-dns-access` on the cluster, `use_dns_based_endpoint: true` in the workflow). It resolves to a Google front end that's reachable from anywhere but authorised purely by IAM, so only the deployer service account gets in. Network-level allow-listing is replaced by identity, which is the same trade I already make with OIDC instead of stored keys.
 
 ---
 

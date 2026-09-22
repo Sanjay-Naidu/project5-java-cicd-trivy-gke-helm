@@ -156,6 +156,11 @@ jobs:
         with:
           cluster_name: ${{ vars.GKE_CLUSTER }}
           location: ${{ vars.GKE_LOCATION }}
+          # The cluster's IP endpoint only accepts control-plane authorized
+          # networks, and GitHub's runners have no fixed egress IP to allow.
+          # The DNS-based endpoint is reachable from anywhere and is gated by
+          # IAM instead of by IP - better than opening the IP to 0.0.0.0/0.
+          use_dns_based_endpoint: true
 
       - name: Set up Helm
         uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310 # v5.0.1
@@ -203,6 +208,11 @@ jobs:
         with:
           cluster_name: ${{ vars.GKE_CLUSTER }}
           location: ${{ vars.GKE_LOCATION }}
+          # The cluster's IP endpoint only accepts control-plane authorized
+          # networks, and GitHub's runners have no fixed egress IP to allow.
+          # The DNS-based endpoint is reachable from anywhere and is gated by
+          # IAM instead of by IP - better than opening the IP to 0.0.0.0/0.
+          use_dns_based_endpoint: true
 
       - name: Set up Helm
         uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310 # v5.0.1
