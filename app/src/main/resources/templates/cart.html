@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<!--
+=============================================================================
+Project : Project 5 - Java (Spring Boot) App CI/CD on Google GKE
+Author  : Sanjay Naidu
+File    : templates/cart.html - shopping cart (filled by static/js/cart.js)
+=============================================================================
+-->
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments :: head('Cart')}"></head>
+<body>
+<header th:replace="~{fragments :: header}"></header>
+
+<main class="container">
+    <h1>Shopping cart</h1>
+    <div data-cart-view>
+        <p class="empty">Loading your cart...</p>
+    </div>
+</main>
+
+<footer th:replace="~{fragments :: footer}"></footer>
+</body>
+</html>

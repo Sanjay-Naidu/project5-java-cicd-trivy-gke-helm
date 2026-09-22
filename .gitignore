@@ -1,0 +1,39 @@
+# =============================================================================
+# Project : Project 5 - Java (Spring Boot) App CI/CD on Google GKE
+# Author  : Sanjay Naidu
+# File    : .gitignore
+# =============================================================================
+
+# --- Java / Maven ---
+target/
+*.class
+*.log
+hs_err_pid*
+
+# --- Kubernetes / Helm ---
+kubeconfig
+*.kubeconfig
+charts/*.tgz
+
+# --- GCP ---
+# Service account KEY files must never exist in this project (we use
+# Workload Identity Federation), but if one ever gets downloaded by
+# mistake, git will refuse to pick it up.
+*-key.json
+*.json.key
+credentials.json
+gha-creds-*.json
+
+# --- IDE / OS ---
+.idea/
+*.iml
+.vscode/
+*.swp
+Thumbs.db
+.DS_Store
+
+# --- Local secrets / tooling (never commit) ---
+.env
+*.pem
+*.key
+.claude/

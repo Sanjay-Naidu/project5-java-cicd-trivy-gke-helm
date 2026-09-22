@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<!--
+=============================================================================
+Project : Project 5 - Java (Spring Boot) App CI/CD on Google GKE
+Author  : Sanjay Naidu
+File    : templates/fragments.html - shared head, header and footer
+=============================================================================
+-->
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${title} + ' | ebayshopping'">ebayshopping</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <script th:src="@{/js/cart.js}" defer></script>
+</head>
+
+<body>
+
+<header th:fragment="header" class="site-header">
+    <div class="header-row">
+        <a class="brand" th:href="@{/}">ebay<span>shopping</span></a>
+        <form class="search" th:action="@{/}" method="get" role="search">
+            <select name="category" aria-label="Category">
+                <option value="">All</option>
+                <option th:each="c : ${categories}" th:value="${c}" th:text="${c}"
+                        th:selected="${c == selectedCategory}">Category</option>
+            </select>
+            <input type="search" name="q" th:value="${q}" placeholder="Search ebayshopping" aria-label="Search">
+            <button type="submit">Search</button>
+        </form>
+        <a class="cart-link" th:href="@{/cart}">
+            Cart <span class="cart-count" data-cart-count>0</span>
+        </a>
+    </div>
+    <nav class="category-bar">
+        <a th:href="@{/}">All products</a>
+        <a th:each="c : ${categories}" th:href="@{/(category=${c})}" th:text="${c}">Category</a>
+    </nav>
+</header>
+
+<footer th:fragment="footer" class="site-footer">
+    <p>ebayshopping &middot; a demo storefront built by Sanjay Naidu</p>
+    <!-- Build identity: proves which image and which pod served this page. -->
+    <p class="build-info">
+        version <code th:text="${app.version}">local</code>
+        &middot; env <code th:text="${app.environment}">local</code>
+        &middot; pod <code th:text="${pod}">local</code>
+    </p>
+</footer>
+
+</body>
+</html>

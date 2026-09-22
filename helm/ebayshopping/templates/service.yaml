@@ -1,0 +1,30 @@
+# =============================================================================
+# Project : Project 5 - Java (Spring Boot) App CI/CD on Google GKE
+# Author  : Sanjay Naidu
+# File    : helm/ebayshopping/templates/service.yaml
+# =============================================================================
+# Only the app port is exposed. The actuator port (8081) is deliberately not
+# part of the Service, so it can never be routed from the ingress.
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ebayshopping.fullname" . }}
+  labels:
+    {{- include "ebayshopping.labels" . | nindent 4 }}
+  {{- if .Values.ingress.enabled }}
+  annotations:
+    # Container-native load balancing: the Google LB targets pod IPs through
+    # Network Endpoint Groups instead of node ports.
+    cloud.google.com/neg: '{"ingress": true}'
+    # Attach the health check / draining settings from backendconfig.yaml.
+    cloud.google.com/backend-config: '{"default": "{{ include "ebayshopping.fullname" . }}"}'
+  {{- end }}
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    {{- include "ebayshopping.selectorLabels" . | nindent 4 }}
+  ports:
+    - name: http
+      port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP

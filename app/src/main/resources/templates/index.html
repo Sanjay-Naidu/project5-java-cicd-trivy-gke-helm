@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<!--
+=============================================================================
+Project : Project 5 - Java (Spring Boot) App CI/CD on Google GKE
+Author  : Sanjay Naidu
+File    : templates/index.html - home page / product listing
+=============================================================================
+-->
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments :: head('Shop')}"></head>
+<body>
+<header th:replace="~{fragments :: header}"></header>
+
+<main class="container">
+    <section class="hero" th:if="${#strings.isEmpty(q) and #strings.isEmpty(selectedCategory)}">
+        <h1>Great deals, delivered.</h1>
+        <p>Free shipping on orders of ₹999 and above.</p>
+    </section>
+
+    <h2 class="section-title">
+        <span th:if="${!#strings.isEmpty(selectedCategory)}" th:text="${selectedCategory}">Category</span>
+        <span th:if="${#strings.isEmpty(selectedCategory)}">All products</span>
+        <small th:text="'(' + ${#lists.size(products)} + ' results)'">(0 results)</small>
+    </h2>
+
+    <p class="empty" th:if="${#lists.isEmpty(products)}">
+        No products match your search. <a th:href="@{/}">Browse everything</a>.
+    </p>
+
+    <div class="grid">
+        <article class="card" th:each="p : ${products}">
+            <a class="card-link" th:href="@{/products/{id}(id=${p.id})}">
+                <div class="thumb" th:text="${p.icon}">?</div>
+                <h3 th:text="${p.name}">Product</h3>
+            </a>
+            <div class="rating" th:text="'★ ' + ${p.rating}">4.5</div>
+            <div class="price-row">
+                <span class="price" th:text="'₹' + ${#numbers.formatDecimal(p.price, 1, 'COMMA', 0, 'POINT')}">0</span>
+                <span class="list-price" th:if="${p.discountPercent() > 0}"
+                      th:text="'₹' + ${#numbers.formatDecimal(p.listPrice, 1, 'COMMA', 0, 'POINT')}">0</span>
+                <span class="discount" th:if="${p.discountPercent() > 0}"
+                      th:text="${p.discountPercent()} + '% off'">0% off</span>
+            </div>
+            <button class="btn" th:if="${p.inStock()}" th:data-add-to-cart="${p.id}">Add to cart</button>
+            <button class="btn" th:unless="${p.inStock()}" disabled>Out of stock</button>
+        </article>
+    </div>
+</main>
+
+<footer th:replace="~{fragments :: footer}"></footer>
+</body>
+</html>

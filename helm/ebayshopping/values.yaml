@@ -1,0 +1,148 @@
+# =============================================================================
+# Project : Project 5 - Java (Spring Boot) App CI/CD on Google GKE
+# Author  : Sanjay Naidu
+# File    : helm/ebayshopping/values.yaml - base (default) values
+# =============================================================================
+# Layering strategy: this file holds safe defaults; values-dev.yaml and
+# values-prod.yaml override ONLY what differs per environment. The CD pipeline
+# additionally injects image.repository and image.tag with --set, so the chart
+# itself never hardcodes a registry, a project id or a build.
+
+replicaCount: 1
+
+image:
+  # Overridden by CD:
+  #   --set image.repository=<region>-docker.pkg.dev/<project>/<repo>/ebayshopping
+  repository: CHANGE_ME-docker.pkg.dev/CHANGE_ME/ebayshopping/ebayshopping
+  # Overridden by CD with the immutable sha-<commit> tag. The chart REFUSES
+  # to render with an empty tag or "latest" (see _helpers.tpl) - you cannot
+  # tell what is running, or roll back reliably, with a moving tag.
+  tag: ""
+  pullPolicy: IfNotPresent
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Dedicated ServiceAccount per app (never the namespace default) - least
+  # privilege, and ready for GKE Workload Identity annotations later
+  # (e.g. iam.gke.io/gcp-service-account: <gsa>@<project>.iam.gserviceaccount.com).
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: false
+  # GKE's built-in ingress controller ("gce"): Google runs it, it provisions
+  # a global external Application Load Balancer. With container-native load
+  # balancing (NEGs) the LB sends traffic straight to pod IPs - no extra
+  # kube-proxy hop, and pod readiness gates make rollouts LB-aware.
+  className: gce
+  # Name of a pre-reserved GLOBAL static IP (created by the setup script), so
+  # the public address survives every redeploy. Empty = ephemeral IP.
+  staticIpName: ""
+  path: /
+  annotations: {}
+
+# Health check + draining settings for the Google load balancer backend.
+# Rendered as a BackendConfig only when ingress is enabled.
+backendConfig:
+  healthCheckPath: /readyz
+  checkIntervalSec: 10
+  timeoutSec: 5
+  healthyThreshold: 1
+  unhealthyThreshold: 3
+  # How long the LB keeps sending in-flight requests to a pod being removed.
+  drainingTimeoutSec: 30
+
+# Right-sized for e2-medium nodes. Requests are what the scheduler reserves.
+# Memory: request < limit so the JVM heap (75% of the LIMIT) has headroom.
+# CPU: request only, deliberately NO CPU limit - a JVM needs a burst of CPU at
+# startup (class loading, JIT) and CFS throttling from a CPU limit turns that
+# into 2-3 minute startups and latency spikes. Memory is incompressible, so
+# it is always capped.
+resources:
+  requests:
+    cpu: 200m
+    memory: 512Mi
+  limits:
+    memory: 768Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 70
+
+# PodDisruptionBudget - keeps at least N pods up during node drains/upgrades
+# (GKE auto-upgrades nodes, so this matters even in a demo cluster).
+pdb:
+  enabled: false
+  minAvailable: 1
+
+networkPolicy:
+  # Allows app traffic only from the Google LB / health-check ranges and the
+  # same namespace, and metrics only from inside the cluster. Enforced by
+  # GKE Dataplane V2 (enabled on the cluster). Off by default so first
+  # deployments are friction-free - see README roadmap.
+  enabled: false
+
+# Rendered into a ConfigMap and injected via envFrom (12-factor config).
+appConfig:
+  APP_ENVIRONMENT: "local"
+  LOG_LEVEL: "INFO"
+
+# Probe timings. Paths are fixed by the app: /livez and /readyz on the main
+# port 8080. The startup probe gives the JVM up to 150s to boot before the
+# liveness probe is allowed to restart it - without it, a slow cold start on
+# a busy node turns into a restart loop.
+probes:
+  startup:
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 30
+  liveness:
+    periodSeconds: 15
+    timeoutSeconds: 3
+    failureThreshold: 3
+  readiness:
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+# Zero-downtime shutdown. On pod deletion Kubernetes removes the endpoint and
+# sends SIGTERM at the same moment - the LB may still route to the pod for a
+# few seconds. The preStop sleep keeps serving during that window, then
+# Spring's graceful shutdown (20s) finishes in-flight requests.
+# Budget: 15s sleep + 20s shutdown = 35s < 60s grace period.
+lifecycle:
+  preStopSleepSeconds: 15
+terminationGracePeriodSeconds: 60
+
+# Spread replicas across nodes so one node failure never takes out all pods.
+topologySpread:
+  enabled: false
+
+# Pod-level security: distroless ':nonroot' user, locked-down seccomp profile.
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65532
+  runAsGroup: 65532
+  fsGroup: 65532
+  seccompProfile:
+    type: RuntimeDefault
+
+# Container-level security: immutable root fs, no privilege escalation,
+# all Linux capabilities dropped.
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL

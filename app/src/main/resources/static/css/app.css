@@ -1,0 +1,110 @@
+/*
+ * =============================================================================
+ * Project : Project 5 - Java (Spring Boot) App CI/CD on Google GKE
+ * Author  : Sanjay Naidu
+ * File    : static/css/app.css - storefront styles (no external CDN/fonts)
+ * =============================================================================
+ * Self-contained on purpose: no third-party CSS/JS means nothing extra to
+ * scan, no CDN outage can break the page, and no tracking by default.
+ */
+:root {
+    --brand: #1f3b73;
+    --brand-dark: #152a52;
+    --accent: #f5a623;
+    --accent-dark: #d98c0a;
+    --bg: #f3f4f6;
+    --card: #ffffff;
+    --text: #1d2330;
+    --muted: #6b7280;
+    --ok: #0f7b3f;
+    --bad: #b42318;
+    --radius: 8px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+}
+
+a { color: var(--brand); }
+
+.container { max-width: 1150px; margin: 0 auto; padding: 20px 16px 40px; }
+
+/* ---------- header ---------- */
+.site-header { background: var(--brand); color: #fff; }
+.header-row { display: flex; align-items: center; gap: 16px; padding: 12px 16px; max-width: 1150px; margin: 0 auto; }
+.brand { color: #fff; text-decoration: none; font-size: 1.6rem; font-weight: 800; letter-spacing: -0.5px; }
+.brand span { color: var(--accent); }
+.search { display: flex; flex: 1; min-width: 0; }
+.search select, .search input, .search button { border: 0; padding: 10px; font-size: 0.95rem; }
+.search select { border-radius: var(--radius) 0 0 var(--radius); background: #e5e7eb; max-width: 130px; }
+.search input { flex: 1; min-width: 0; }
+.search button { background: var(--accent); border-radius: 0 var(--radius) var(--radius) 0; cursor: pointer; font-weight: 600; }
+.search button:hover { background: var(--accent-dark); }
+.cart-link { color: #fff; text-decoration: none; font-weight: 600; white-space: nowrap; }
+.cart-count { background: var(--accent); color: var(--text); border-radius: 999px; padding: 2px 8px; margin-left: 4px; }
+.category-bar { background: var(--brand-dark); padding: 8px 16px; display: flex; gap: 18px; overflow-x: auto; }
+.category-bar a { color: #fff; text-decoration: none; font-size: 0.9rem; white-space: nowrap; }
+.category-bar a:hover { text-decoration: underline; }
+
+/* ---------- content ---------- */
+.hero { background: linear-gradient(120deg, var(--brand), #3a64b0); color: #fff; border-radius: var(--radius); padding: 28px; margin-bottom: 20px; }
+.hero h1 { margin: 0 0 6px; }
+.section-title small { color: var(--muted); font-weight: 400; font-size: 0.9rem; }
+.breadcrumb { color: var(--muted); font-size: 0.9rem; }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 16px; }
+.card { background: var(--card); border-radius: var(--radius); padding: 14px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 1px 2px rgba(0,0,0,.06); }
+.card-link { color: inherit; text-decoration: none; }
+.card h3 { font-size: 0.98rem; margin: 8px 0 0; min-height: 2.4em; }
+.thumb { background: #eef2f9; border-radius: var(--radius); height: 140px; display: flex; align-items: center; justify-content: center; font-size: 64px; }
+.thumb.large { height: 320px; font-size: 140px; }
+.rating { color: #b7791f; font-size: 0.9rem; }
+.price-row { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.price { font-weight: 700; font-size: 1.15rem; }
+.price.big { font-size: 1.8rem; }
+.list-price { color: var(--muted); text-decoration: line-through; font-size: 0.9rem; }
+.discount { color: var(--ok); font-weight: 600; font-size: 0.9rem; }
+.stock { color: var(--ok); font-weight: 600; }
+.stock.out { color: var(--bad); }
+
+.btn { background: var(--accent); border: 0; border-radius: 999px; padding: 9px 16px; font-weight: 600; cursor: pointer; color: var(--text); text-decoration: none; display: inline-block; text-align: center; }
+.btn:hover { background: var(--accent-dark); }
+.btn:disabled { background: #d1d5db; cursor: not-allowed; }
+.btn-lg { padding: 12px 28px; font-size: 1rem; }
+.btn-link { background: none; border: 0; color: var(--brand); cursor: pointer; text-decoration: underline; padding: 0; }
+
+.product-detail { display: grid; grid-template-columns: 1fr 1.2fr; gap: 28px; background: var(--card); border-radius: var(--radius); padding: 24px; margin-bottom: 24px; }
+.details h1 { margin-top: 0; }
+
+.panel { background: var(--card); border-radius: var(--radius); padding: 20px; }
+.cart-table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: var(--radius); overflow: hidden; }
+.cart-table th, .cart-table td { padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: left; }
+.cart-table input { width: 60px; padding: 6px; }
+.totals { margin-top: 16px; text-align: right; }
+.totals .grand { font-size: 1.3rem; font-weight: 700; }
+
+.checkout { display: grid; grid-template-columns: 1.3fr 1fr; gap: 20px; align-items: start; }
+.checkout label { display: block; margin-bottom: 12px; font-weight: 600; }
+.checkout input, .checkout textarea { display: block; width: 100%; margin-top: 4px; padding: 10px; border: 1px solid #d1d5db; border-radius: var(--radius); font: inherit; }
+.summary-line { display: flex; justify-content: space-between; margin: 6px 0; }
+.note { color: var(--muted); font-size: 0.85rem; }
+.error { color: var(--bad); font-weight: 600; }
+.empty { color: var(--muted); }
+.success { background: #e7f6ec; border: 1px solid #a7dcb9; border-radius: var(--radius); padding: 20px; }
+.error-page { text-align: center; padding-top: 60px; }
+
+/* ---------- footer ---------- */
+.site-footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding: 24px 16px; border-top: 1px solid #e5e7eb; }
+.build-info code { background: #e5e7eb; padding: 1px 6px; border-radius: 4px; }
+
+@media (max-width: 720px) {
+    .header-row { flex-wrap: wrap; }
+    .search { order: 3; flex-basis: 100%; }
+    .product-detail, .checkout { grid-template-columns: 1fr; }
+    .thumb.large { height: 200px; font-size: 96px; }
+}

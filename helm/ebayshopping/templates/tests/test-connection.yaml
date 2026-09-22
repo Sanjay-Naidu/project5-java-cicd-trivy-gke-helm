@@ -1,0 +1,56 @@
+# =============================================================================
+# Project : Project 5 - Java (Spring Boot) App CI/CD on Google GKE
+# Author  : Sanjay Naidu
+# File    : helm/ebayshopping/templates/tests/test-connection.yaml
+# =============================================================================
+# `helm test` smoke test, run by CD after every deploy: an in-cluster pod must
+# get HTTP 200 from the Service's readiness endpoint AND the product API.
+#
+# Labels are deliberately NOT the app's selector labels - otherwise the
+# Service would select this test pod as a backend.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "ebayshopping.fullname" . }}-test"
+  labels:
+    app.kubernetes.io/name: {{ include "ebayshopping.name" . }}-test
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  annotations:
+    "helm.sh/hook": test
+    # before-hook-creation only: with hook-succeeded, Helm deletes the pod
+    # the moment it passes and `helm test --logs` then fails with "pods not
+    # found" (hit this in Project 3). The old pod is replaced on the next run.
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  restartPolicy: Never
+  automountServiceAccountToken: false
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 65532
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+    - name: smoke
+      image: busybox:1.37
+      securityContext:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop:
+            - ALL
+      command: ["sh", "-c"]
+      args:
+        - |
+          set -e
+          base="http://{{ include "ebayshopping.fullname" . }}:{{ .Values.service.port }}"
+          echo "GET $base/readyz";       wget -qO- "$base/readyz"
+          echo; echo "GET $base/api/info"; wget -qO- "$base/api/info"
+          echo; echo "GET $base/api/products (first 200 bytes)"
+          wget -qO- "$base/api/products" | head -c 200
+          echo; echo "smoke test passed"
+      resources:
+        requests:
+          cpu: 10m
+          memory: 16Mi
+        limits:
+          memory: 32Mi

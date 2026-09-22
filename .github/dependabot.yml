@@ -1,0 +1,31 @@
+# =============================================================================
+# Project : Project 5 - Java (Spring Boot) App CI/CD on Google GKE
+# Author  : Sanjay Naidu
+# File    : .github/dependabot.yml - automated dependency updates
+# =============================================================================
+# Every bump arrives as a PR and must pass the full PR Validation pipeline
+# (tests + Trivy) before it can merge. Weekly + grouped keeps the noise low.
+version: 2
+updates:
+  - package-ecosystem: maven
+    directory: /app
+    schedule:
+      interval: weekly
+    groups:
+      maven-minor-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+
+  # Actions are pinned to commit SHAs; Dependabot updates the SHA and the
+  # version comment together.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]

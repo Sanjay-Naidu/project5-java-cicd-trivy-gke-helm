@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<!--
+=============================================================================
+Project : Project 5 - Java (Spring Boot) App CI/CD on Google GKE
+Author  : Sanjay Naidu
+File    : templates/checkout.html - checkout form, posts to /api/orders
+=============================================================================
+-->
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments :: head('Checkout')}"></head>
+<body>
+<header th:replace="~{fragments :: header}"></header>
+
+<main class="container">
+    <h1>Checkout</h1>
+    <div class="checkout" data-checkout-view>
+        <form class="panel" data-checkout-form>
+            <h2>Delivery details</h2>
+            <label>Full name <input name="customerName" required maxlength="100"></label>
+            <label>Email <input name="email" type="email" required maxlength="200"></label>
+            <label>Address <textarea name="address" required maxlength="300" rows="3"></textarea></label>
+            <p class="note">Demo store - no payment is taken and nothing is shipped.</p>
+            <button class="btn btn-lg" type="submit">Place order</button>
+            <p class="error" data-checkout-error hidden></p>
+        </form>
+        <aside class="panel" data-checkout-summary>
+            <p class="empty">Loading order summary...</p>
+        </aside>
+    </div>
+</main>
+
+<footer th:replace="~{fragments :: footer}"></footer>
+</body>
+</html>

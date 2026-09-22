@@ -1,0 +1,25 @@
+# =============================================================================
+# Project : Project 5 - Java (Spring Boot) App CI/CD on Google GKE
+# Author  : Sanjay Naidu
+# File    : .dockerignore - keep the build context small and secret-free
+# =============================================================================
+# Only app/pom.xml and app/src are needed inside the build. Everything else
+# stays out: faster uploads to the Docker daemon and no chance of leaking
+# local files, CI config or build output into image layers.
+
+.git
+.github
+.gitignore
+.idea
+.vscode
+app/target
+helm/
+scripts/
+docs/
+README.md
+LICENSE
+Dockerfile
+.dockerignore
+.trivyignore
+*.env
+.env

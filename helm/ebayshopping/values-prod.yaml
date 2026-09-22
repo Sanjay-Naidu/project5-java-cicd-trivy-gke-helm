@@ -1,0 +1,33 @@
+# =============================================================================
+# Project : Project 5 - Java (Spring Boot) App CI/CD on Google GKE
+# Author  : Sanjay Naidu
+# File    : helm/ebayshopping/values-prod.yaml - prod namespace overrides
+# =============================================================================
+# Prod priorities: availability. >=2 replicas spread across nodes,
+# zero-downtime rolling updates, HPA for load spikes, PDB so node drains and
+# GKE auto-upgrades never take the app to zero, and public exposure through
+# the GKE ingress on a reserved static IP.
+
+replicaCount: 2
+
+ingress:
+  enabled: true
+  # Reserved by scripts/gcp-setup.sh (gcloud compute addresses create --global)
+  staticIpName: ebayshopping-ip
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 4
+  targetCPUUtilizationPercentage: 70
+
+pdb:
+  enabled: true
+  minAvailable: 1
+
+topologySpread:
+  enabled: true
+
+appConfig:
+  APP_ENVIRONMENT: "prod"
+  LOG_LEVEL: "INFO"

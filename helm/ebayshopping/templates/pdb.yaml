@@ -1,0 +1,20 @@
+# =============================================================================
+# Project : Project 5 - Java (Spring Boot) App CI/CD on Google GKE
+# Author  : Sanjay Naidu
+# File    : helm/ebayshopping/templates/pdb.yaml
+# =============================================================================
+# GKE drains nodes during auto-upgrades and autoscaler scale-downs. The PDB
+# makes those voluntary evictions wait until another replica is ready.
+{{- if .Values.pdb.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "ebayshopping.fullname" . }}
+  labels:
+    {{- include "ebayshopping.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.pdb.minAvailable }}
+  selector:
+    matchLabels:
+      {{- include "ebayshopping.selectorLabels" . | nindent 6 }}
+{{- end }}

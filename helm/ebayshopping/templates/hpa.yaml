@@ -1,0 +1,37 @@
+# =============================================================================
+# Project : Project 5 - Java (Spring Boot) App CI/CD on Google GKE
+# Author  : Sanjay Naidu
+# File    : helm/ebayshopping/templates/hpa.yaml
+# =============================================================================
+# CPU-based autoscaling. GKE ships metrics-server, so no extra install.
+# When the HPA is on, the Deployment omits `replicas` so Helm upgrades never
+# fight the autoscaler over the pod count.
+{{- if .Values.autoscaling.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "ebayshopping.fullname" . }}
+  labels:
+    {{- include "ebayshopping.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "ebayshopping.fullname" . }}
+  minReplicas: {{ .Values.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.autoscaling.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.autoscaling.targetCPUUtilizationPercentage }}
+  behavior:
+    # JVM startup burns CPU for ~30s; without a stabilisation window the HPA
+    # would read that spike as load and scale up on every rollout.
+    scaleUp:
+      stabilizationWindowSeconds: 60
+    scaleDown:
+      stabilizationWindowSeconds: 300
+{{- end }}

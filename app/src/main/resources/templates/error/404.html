@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<!--
+=============================================================================
+Project : Project 5 - Java (Spring Boot) App CI/CD on Google GKE
+Author  : Sanjay Naidu
+File    : templates/error/404.html - friendly not-found page
+=============================================================================
+Standalone (no shared header) because the error view does not get the
+controller's model attributes such as the category list.
+-->
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Not found | ebayshopping</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<header class="site-header">
+    <div class="header-row"><a class="brand" th:href="@{/}">ebay<span>shopping</span></a></div>
+</header>
+<main class="container error-page">
+    <h1>We couldn't find that page</h1>
+    <p>The product may have been removed, or the link is wrong.</p>
+    <a class="btn" th:href="@{/}">Back to the shop</a>
+</main>
+</body>
+</html>

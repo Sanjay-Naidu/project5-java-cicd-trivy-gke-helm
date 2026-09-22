@@ -1,0 +1,66 @@
+# =============================================================================
+# Project : Project 5 - Java (Spring Boot) App CI/CD on Google GKE
+# Author  : Sanjay Naidu
+# File    : app/src/main/resources/application.yml
+# =============================================================================
+# Everything environment-specific is an env var with a safe local default.
+# The Helm chart sets APP_VERSION / APP_ENVIRONMENT per namespace.
+
+spring:
+  application:
+    name: ebayshopping
+  threads:
+    # Java 21 virtual threads: each request gets a cheap virtual thread
+    # instead of a pooled platform thread - more concurrency per small pod.
+    virtual:
+      enabled: true
+  lifecycle:
+    # Graceful shutdown budget. Must stay below the pod's
+    # terminationGracePeriodSeconds (45s in the chart) minus the preStop sleep.
+    timeout-per-shutdown-phase: 20s
+
+server:
+  port: 8080
+  shutdown: graceful
+  # Behind the Google load balancer: trust X-Forwarded-* so redirects and
+  # generated links use the public scheme/host, not the pod address.
+  forward-headers-strategy: framework
+
+management:
+  # Actuator lives on its OWN port. The Service/Ingress only expose 8080, so
+  # /actuator/prometheus and friends are reachable inside the cluster (for a
+  # metrics scraper) but never from the internet.
+  server:
+    port: 8081
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      show-details: never
+      probes:
+        enabled: true
+        # Also serve /livez and /readyz on the MAIN port (8080). Kubernetes
+        # and the load balancer probe the port that actually serves traffic,
+        # so a wedged web server is detected even if 8081 still answers.
+        add-additional-paths: true
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    name: ${spring.application.name}
+    version: ${app.version}
+
+app:
+  name: ebayshopping
+  version: ${APP_VERSION:local}
+  environment: ${APP_ENVIRONMENT:local}
+  free-shipping-threshold: 999
+  shipping-fee: 49
+
+logging:
+  level:
+    root: ${LOG_LEVEL:INFO}

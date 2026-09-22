@@ -1,0 +1,21 @@
+# =============================================================================
+# Project : Project 5 - Java (Spring Boot) App CI/CD on Google GKE
+# Author  : Sanjay Naidu
+# File    : helm/ebayshopping/Chart.yaml
+# =============================================================================
+apiVersion: v2
+name: ebayshopping
+description: ebayshopping Spring Boot storefront on GKE (GCE ingress, HPA, PDB, hardened pods)
+type: application
+# Chart version - bump when templates change.
+version: 1.0.0
+# App version is informational; the real build identity is the image tag
+# (sha-<commit>) injected by the pipeline.
+appVersion: "1.0.0"
+maintainers:
+  - name: Sanjay Naidu
+    url: https://github.com/Sanjay-Naidu
+keywords:
+  - spring-boot
+  - gke
+  - ecommerce

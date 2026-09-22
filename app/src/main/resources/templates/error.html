@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<!--
+=============================================================================
+Project : Project 5 - Java (Spring Boot) App CI/CD on Google GKE
+Author  : Sanjay Naidu
+File    : templates/error.html - generic error page (no stack traces shown)
+=============================================================================
+-->
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Error | ebayshopping</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<header class="site-header">
+    <div class="header-row"><a class="brand" th:href="@{/}">ebay<span>shopping</span></a></div>
+</header>
+<main class="container error-page">
+    <h1>Something went wrong</h1>
+    <p>Error <span th:text="${status}">500</span>. Please try again in a moment.</p>
+    <a class="btn" th:href="@{/}">Back to the shop</a>
+</main>
+</body>
+</html>

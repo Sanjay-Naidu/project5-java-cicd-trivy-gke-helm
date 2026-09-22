@@ -1,0 +1,42 @@
+# =============================================================================
+# Project : Project 5 - Java (Spring Boot) App CI/CD on Google GKE
+# Author  : Sanjay Naidu
+# File    : helm/ebayshopping/templates/networkpolicy.yaml
+# =============================================================================
+# With container-native LB, traffic reaches pods DIRECTLY from Google Front
+# Ends and health checkers, whose source ranges are 35.191.0.0/16 and
+# 130.211.0.0/22. Forgetting those ranges is the classic way to enable a
+# NetworkPolicy and silently take the site down while every pod looks healthy.
+{{- if .Values.networkPolicy.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "ebayshopping.fullname" . }}
+  labels:
+    {{- include "ebayshopping.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "ebayshopping.selectorLabels" . | nindent 6 }}
+  policyTypes:
+    - Ingress
+  ingress:
+    # App port: Google LB + health checks, and pods in the same namespace
+    # (e.g. the helm test pod).
+    - from:
+        - ipBlock:
+            cidr: 35.191.0.0/16
+        - ipBlock:
+            cidr: 130.211.0.0/22
+        - podSelector: {}
+      ports:
+        - port: 8080
+          protocol: TCP
+    # Metrics port: any namespace in the cluster (Managed Prometheus
+    # collectors run in gmp-system), never from outside.
+    - from:
+        - namespaceSelector: {}
+      ports:
+        - port: 8081
+          protocol: TCP
+{{- end }}

@@ -1,0 +1,17 @@
+# =============================================================================
+# Project : Project 5 - Java (Spring Boot) App CI/CD on Google GKE
+# Author  : Sanjay Naidu
+# File    : helm/ebayshopping/templates/configmap.yaml
+# =============================================================================
+# Non-secret runtime config. Secrets would come from Secret Manager via the
+# CSI driver, never from here (see README roadmap).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ebayshopping.fullname" . }}
+  labels:
+    {{- include "ebayshopping.labels" . | nindent 4 }}
+data:
+  {{- range $key, $value := .Values.appConfig }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}

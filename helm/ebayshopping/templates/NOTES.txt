@@ -1,0 +1,15 @@
+ebayshopping {{ include "ebayshopping.imageTag" . }} deployed to namespace "{{ .Release.Namespace }}".
+{{- if .Values.ingress.enabled }}
+
+Public URL (the Google load balancer takes ~5-10 minutes on FIRST creation):
+  kubectl -n {{ .Release.Namespace }} get ingress {{ include "ebayshopping.fullname" . }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+  then open http://<IP>/
+{{- else }}
+
+No ingress in this environment. Reach it with a port-forward:
+  kubectl -n {{ .Release.Namespace }} port-forward svc/{{ include "ebayshopping.fullname" . }} 8080:{{ .Values.service.port }}
+  then open http://localhost:8080/
+{{- end }}
+
+Which build is running?   curl <url>/api/info
+Smoke test:               helm test {{ .Release.Name }} -n {{ .Release.Namespace }} --logs

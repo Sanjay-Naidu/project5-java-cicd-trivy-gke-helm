@@ -1,0 +1,46 @@
+# =============================================================================
+# Project : Project 5 - Java (Spring Boot) App CI/CD on Google GKE
+# Author  : Sanjay Naidu
+# File    : helm/ebayshopping/templates/ingress.yaml
+# =============================================================================
+# Handled by GKE's built-in ingress controller, which builds a global
+# external Application Load Balancer (forwarding rule -> target proxy ->
+# URL map -> backend service -> NEG -> pods). First creation takes ~5-10
+# minutes while Google programs the LB worldwide; later deploys only swap
+# pods behind it.
+#
+# The class is set with the kubernetes.io/ingress.class annotation because
+# that is what the GKE controller documents and matches on.
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "ebayshopping.fullname" . }}
+  labels:
+    {{- include "ebayshopping.labels" . | nindent 4 }}
+  annotations:
+    kubernetes.io/ingress.class: {{ .Values.ingress.className | quote }}
+    {{- if .Values.ingress.staticIpName }}
+    # Pre-reserved global static IP -> the public address never changes.
+    kubernetes.io/ingress.global-static-ip-name: {{ .Values.ingress.staticIpName | quote }}
+    {{- end }}
+    {{- with .Values.ingress.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  defaultBackend:
+    service:
+      name: {{ include "ebayshopping.fullname" . }}
+      port:
+        name: http
+  rules:
+    - http:
+        paths:
+          - path: {{ .Values.ingress.path }}
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "ebayshopping.fullname" . }}
+                port:
+                  name: http
+{{- end }}

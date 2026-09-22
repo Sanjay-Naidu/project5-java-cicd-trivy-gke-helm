@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<!--
+=============================================================================
+Project : Project 5 - Java (Spring Boot) App CI/CD on Google GKE
+Author  : Sanjay Naidu
+File    : templates/product.html - product detail page
+=============================================================================
+-->
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments :: head(${product.name})}"></head>
+<body>
+<header th:replace="~{fragments :: header}"></header>
+
+<main class="container">
+    <p class="breadcrumb">
+        <a th:href="@{/}">Home</a> &rsaquo;
+        <a th:href="@{/(category=${product.category})}" th:text="${product.category}">Category</a>
+    </p>
+
+    <section class="product-detail">
+        <div class="thumb large" th:text="${product.icon}">?</div>
+        <div class="details">
+            <h1 th:text="${product.name}">Product</h1>
+            <div class="rating" th:text="'★ ' + ${product.rating} + ' out of 5'">4.5</div>
+            <div class="price-row">
+                <span class="price big" th:text="'₹' + ${#numbers.formatDecimal(product.price, 1, 'COMMA', 0, 'POINT')}">0</span>
+                <span class="list-price" th:if="${product.discountPercent() > 0}"
+                      th:text="'M.R.P. ₹' + ${#numbers.formatDecimal(product.listPrice, 1, 'COMMA', 0, 'POINT')}">0</span>
+                <span class="discount" th:if="${product.discountPercent() > 0}"
+                      th:text="${product.discountPercent()} + '% off'">0% off</span>
+            </div>
+            <p th:text="${product.description}">Description</p>
+            <p class="stock" th:if="${product.inStock()}" th:text="'In stock (' + ${product.stock} + ' left)'">In stock</p>
+            <p class="stock out" th:unless="${product.inStock()}">Currently unavailable</p>
+            <button class="btn btn-lg" th:if="${product.inStock()}" th:data-add-to-cart="${product.id}">Add to cart</button>
+        </div>
+    </section>
+
+    <section th:unless="${#lists.isEmpty(related)}">
+        <h2 class="section-title">More in <span th:text="${product.category}">Category</span></h2>
+        <div class="grid">
+            <article class="card" th:each="p : ${related}">
+                <a class="card-link" th:href="@{/products/{id}(id=${p.id})}">
+                    <div class="thumb" th:text="${p.icon}">?</div>
+                    <h3 th:text="${p.name}">Product</h3>
+                </a>
+                <span class="price" th:text="'₹' + ${#numbers.formatDecimal(p.price, 1, 'COMMA', 0, 'POINT')}">0</span>
+            </article>
+        </div>
+    </section>
+</main>
+
+<footer th:replace="~{fragments :: footer}"></footer>
+</body>
+</html>
