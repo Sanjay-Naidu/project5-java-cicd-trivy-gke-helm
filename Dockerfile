@@ -15,7 +15,7 @@
 #                    Helm chart's runAsNonRoot/runAsUser settings.
 
 # ---------- Stage 1 : build ----------
-FROM maven:3.9.16-eclipse-temurin-21 AS build
+FROM maven:3-eclipse-temurin-26 AS build
 
 WORKDIR /build
 
