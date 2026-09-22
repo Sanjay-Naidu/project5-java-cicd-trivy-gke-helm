@@ -102,7 +102,8 @@ GCP_DEPLOY_SA       = github-deployer@ebayshopping-demo-471203.iam.gserviceaccou
 Quick look at what you built:
 
 ```bash
-gcloud container clusters get-credentials ebayshopping-gke --zone us-central1-a
+# --dns-endpoint: the IP endpoint is restricted to authorized networks
+gcloud container clusters get-credentials ebayshopping-gke --zone us-central1-a --dns-endpoint
 kubectl get nodes -o wide          # 2 nodes, INTERNAL-IP only (private nodes)
 ```
 
@@ -234,6 +235,7 @@ The next run includes the analysis and fails if the quality gate fails.
 | `helm test` pod `ImagePullBackOff` on `busybox` | Private nodes have no internet without Cloud NAT. Check `gcloud compute routers nats list --router ebayshopping-router --region us-central1`. |
 | Ingress has no IP / `kubectl describe ingress` shows *static IP not found* | `ebayshopping-ip` must be a **global** address with exactly the name in `values-prod.yaml`. |
 | Public URL returns **502** for several minutes after the first deploy | Normal while Google programs the LB and health checks go green. The pipeline step waits for it. If it lasts more than 15 minutes: `kubectl describe ingress ebayshopping -n prod` and check the backend health status. |
+| `kubectl`/`helm` from Cloud Shell: `dial tcp <control-plane-ip>:443: i/o timeout` | `get-credentials` wrote the IP endpoint, which authorized networks block. Re-fetch with `--dns-endpoint`: `gcloud container clusters get-credentials ebayshopping-gke --zone us-central1-a --dns-endpoint`. |
 | Deploy fails: `kubernetes cluster unreachable ... i/o timeout` | The cluster's DNS-based endpoint is off, so the runner can only try the IP endpoint, which authorized networks block. Fix: `gcloud container clusters update ebayshopping-gke --zone us-central1-a --enable-dns-access` (the setup script does this from now on). |
 | Deploy fails: `Permission denied on cluster ... container.clusters.connect` | The DNS endpoint needs that permission. Re-run `gcp-setup.sh` step 7, or grant `roles/container.developer` to the deployer SA. |
 | Trivy fails the build | That's it working. Bump the base image or dependency it names (Dependabot usually already has a PR). If there's truly no fix, document it in `.trivyignore` with a reason and a re-check date. |

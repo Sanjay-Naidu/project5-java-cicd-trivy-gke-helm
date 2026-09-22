@@ -37,7 +37,10 @@ fi
 step "1/7 Uninstalling the app so GKE deletes the load balancer"
 # -----------------------------------------------------------------------------
 if gcloud container clusters describe "${CLUSTER}" --zone "${ZONE}" >/dev/null 2>&1; then
-  gcloud container clusters get-credentials "${CLUSTER}" --zone "${ZONE}"
+  # --dns-endpoint: the cluster's IP endpoint is restricted to control plane
+  # authorized networks, so kubectl/helm must go through the DNS-based
+  # endpoint (IAM-authorised) - from Cloud Shell as well as from CI.
+  gcloud container clusters get-credentials "${CLUSTER}" --zone "${ZONE}" --dns-endpoint
   for ns in prod dev; do
     helm uninstall ebayshopping -n "${ns}" --wait 2>/dev/null && info "helm release removed from ${ns}"
     kubectl delete namespace "${ns}" --ignore-not-found --wait=true --timeout=5m
